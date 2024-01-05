@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import Nav from "./common/Nav";
 import toast, { Toaster } from "react-hot-toast";
 import { useSelector, useDispatch } from "react-redux";
@@ -14,6 +14,7 @@ function App() {
     if (localStorage.getItem("token"))
       dispatch(loginByTokenThunk(localStorage.getItem("token")));
   }, []);
+
   return (
     <>
       <Nav />

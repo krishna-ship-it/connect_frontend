@@ -4,17 +4,22 @@ import logo from "./../assets/logo.png";
 import { useSelector } from "react-redux";
 
 function Nav() {
-  const { isAuthenticated } = useSelector((state) => state.user);
+  const { isAuthenticated, user } = useSelector((state) => state.user);
 
   return (
     <nav className="p-3 flex justify-between items-center">
-      <Link to="/">
+      <Link to={isAuthenticated ? "/feed" : "/login"}>
         <img src={logo} className="w-16" />
       </Link>
       <ul className="flex">
         {isAuthenticated ? (
           <>
-            <Link>Notifications</Link>
+            <Link to="profile">
+              <img
+                src={user?.avatar_public_url}
+                className="w-[35px] rounded-[50%]"
+              />
+            </Link>
           </>
         ) : (
           <>
