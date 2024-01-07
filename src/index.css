@@ -10,3 +10,6 @@ input {
   color: white;
   font-family: "Poppins", sans-serif;
 }
+/* textarea {
+  min-height: 50vh;
+} */

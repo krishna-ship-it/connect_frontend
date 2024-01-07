@@ -14,7 +14,7 @@ const appRouter = createBrowserRouter([
     element: <App />,
     children: [
       { path: "login", element: <Login /> },
-      { path: "profile", element: <Profile /> },
+      { path: "profile/:user_id", element: <Profile /> },
       { path: "feed", element: <Feed /> },
     ],
   },

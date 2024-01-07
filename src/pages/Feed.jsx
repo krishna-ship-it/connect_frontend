@@ -1,11 +1,40 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import Modal from "../common/Modal";
-
+import { apiEndpoints } from "./../config/api-config";
+import toast from "react-hot-toast";
 function Feed() {
   const { isAuthenticated, user } = useSelector((state) => state.user);
-  //   console.log(user);
   const [isOpen, setIsOpen] = useState(false);
+  const [text, setText] = useState("");
+  const [images, setImages] = useState(null);
+  const submitHandler = async () => {
+    const formData = new FormData();
+    if (text) formData.append("title", text);
+    if (images) {
+      const attachments = [];
+      for (let i = 0; i < images.length; i++) attachments.push(images[i]);
+      attachments.forEach((file, index) => {
+        formData.append("attachments", file);
+      });
+    }
+    try {
+      const response = await fetch(
+        `${apiEndpoints.postsEndpoints.CREATEPOST}`,
+        {
+          method: "POST",
+          body: formData,
+          headers: { "x-auth-token": localStorage.getItem("token") },
+        }
+      );
+      const result = await response.json();
+      console.log(result);
+      toast.success("posted");
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+  const textLimit = 500;
   return (
     <div className="feed_wrapper w-screen p-8">
       {isAuthenticated && (
@@ -34,10 +63,48 @@ function Feed() {
                 className="resize-none bg-transparent w-full  outline-none p-3
                 border-purple-300 border-[1px]
                 rounded-md
-                  placeholder:text-white"
+                min-h-[40vh]
+                  placeholder:text-purple-100"
                 placeholder="what do you want to talk about?"
+                onChange={(e) => {
+                  setText(e.target.value);
+                }}
               ></textarea>
-              <input type="file" />
+              {text.length > textLimit && (
+                <div className="w-full text-red-950 flex justify-between items-center">
+                  <p>You have exceed the maximum character limit</p>
+                  <p>
+                    {text.length}/{textLimit}
+                  </p>
+                </div>
+              )}
+
+              <div className="py-3">
+                <label htmlFor="attachments" className="cursor-pointer">
+                  <i className="fa-solid fa-image bg-purple-950 p-3 rounded-[50%]"></i>
+                </label>
+                <input
+                  type="file"
+                  name="attachments"
+                  id="attachments"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    setImages(e.target.files);
+                  }}
+                  multiple
+                />
+              </div>
+              <div className="py-3 flex justify-end">
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    submitHandler();
+                  }}
+                >
+                  Post
+                </button>
+              </div>
             </div>
           </Modal>
         </div>

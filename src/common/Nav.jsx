@@ -14,7 +14,7 @@ function Nav() {
       <ul className="flex">
         {isAuthenticated ? (
           <>
-            <Link to="profile">
+            <Link to={`profile/${user.id}`}>
               <img
                 src={user?.avatar_public_url}
                 className="w-[35px] rounded-[50%]"

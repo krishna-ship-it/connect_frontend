@@ -1,11 +1,41 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate, useParams } from "react-router-dom";
+import { apiEndpoints } from "./../config/api-config";
+import PostCard from "../common/PostCard";
 function Profile() {
-  const { isAuthenticated, user } = useSelector((state) => state.user);
+  const [posts, setPosts] = useState([]);
+  const [author, setAuthor] = useState(null);
+  const params = useParams();
+  const { user_id } = params;
   const navigate = useNavigate();
-  if (!isAuthenticated) return navigate("/login");
+  useEffect(() => {
+    if (!isAuthenticated) return navigate("/login");
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch(
+          `${apiEndpoints.postsEndpoints.GETPOSTS}/${user_id}/?page_no=2`,
+          {
+            method: "GET",
+            headers: {
+              "x-auth-token": localStorage.getItem("token"),
+            },
+          }
+        );
+        const data = await response.json();
+        console.log(data);
+        setPosts(data.posts);
+        setAuthor(data.author_details);
+        // console.log(author);
+        // console.log(posts);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchPosts();
+  }, [user_id]);
+  const { isAuthenticated, user } = useSelector((state) => state.user);
+
   return (
     <div className="profile_wrapper w-screen p-8">
       <div className="profile_intro flex flex-col justify-center items-center ">
@@ -14,7 +44,15 @@ function Profile() {
           className="rounded-[50%] w-[100px]"
         />
         <h1 className="text-2xl text-purple-400 text-justify">{user?.name}</h1>
-        <div className=""></div>
+        <div className="posts">
+          {posts ? (
+            posts?.map((post) => (
+              <PostCard post={post} author={author} key={post.id} />
+            ))
+          ) : (
+            <p>You have not posted anything</p>
+          )}
+        </div>
       </div>
     </div>
   );
