@@ -92,7 +92,6 @@ function Feed() {
                   onChange={(e) => {
                     setImages(e.target.files);
                   }}
-                  multiple
                 />
               </div>
               <div className="py-3 flex justify-end">

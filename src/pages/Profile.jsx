@@ -14,7 +14,7 @@ function Profile() {
     const fetchPosts = async () => {
       try {
         const response = await fetch(
-          `${apiEndpoints.postsEndpoints.GETPOSTS}/${user_id}/?page_no=2`,
+          `${apiEndpoints.postsEndpoints.GETPOSTS}/${user_id}/?page_no=1`,
           {
             method: "GET",
             headers: {
@@ -27,7 +27,7 @@ function Profile() {
         setPosts(data.posts);
         setAuthor(data.author_details);
         // console.log(author);
-        // console.log(posts);
+        console.log(posts);
       } catch (err) {
         console.log(err);
       }
@@ -44,15 +44,19 @@ function Profile() {
           className="rounded-[50%] w-[100px]"
         />
         <h1 className="text-2xl text-purple-400 text-justify">{user?.name}</h1>
-        <div className="posts">
-          {posts ? (
-            posts?.map((post) => (
-              <PostCard post={post} author={author} key={post.id} />
-            ))
-          ) : (
-            <p>You have not posted anything</p>
-          )}
-        </div>
+        {posts ? (
+          <div className="posts">
+            {posts ? (
+              posts?.map((post) => (
+                <PostCard post={post} author={author} key={post.id} />
+              ))
+            ) : (
+              <p>You have not posted anything</p>
+            )}
+          </div>
+        ) : (
+          "<h1>You have not posted anything</h1>"
+        )}
       </div>
     </div>
   );
