@@ -46,7 +46,7 @@ function Profile() {
         <h1 className="text-2xl text-purple-400 text-justify">{user?.name}</h1>
         {posts ? (
           <div className="posts">
-            {posts ? (
+            {posts?.length > 0 ? (
               posts?.map((post) => (
                 <PostCard post={post} author={author} key={post.id} />
               ))

@@ -9,5 +9,6 @@ export const apiEndpoints = {
     GETPOSTS: "http://localhost:4000/api/v1/posts/user",
     GETLIKES: "http://localhost:4000/api/v1/likes/posts",
     LIKEORREMOVELIKEPOST: "http://localhost:4000/api/v1/likes/posts",
+    DELETEPOST: "http://localhost:4000/api/v1/posts",
   },
 };
