@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import stateStatus from "../../helper/state-status";
 import { apiEndpoints } from "./../../config/api-config";
-const INITIALSTATE = {
+export const INITIALSTATE = {
   status: stateStatus.IDLE,
   user: null,
   isAuthenticated: false,
@@ -17,6 +17,7 @@ const slice = createSlice({
   },
 });
 export const { setUserState } = slice.actions;
+
 export default slice.reducer;
 export const loginThunk = (data) => {
   return async function (dispatch) {

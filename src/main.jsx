@@ -8,12 +8,14 @@ import { Provider } from "react-redux";
 import store from "./store/store.js";
 import Profile from "./pages/Profile.jsx";
 import Feed from "./pages/Feed.jsx";
+import Signup from "./pages/Signup.jsx";
 const appRouter = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     children: [
       { path: "login", element: <Login /> },
+      { path: "signup", element: <Signup /> },
       { path: "profile/:user_id", element: <Profile /> },
       { path: "feed", element: <Feed /> },
     ],
