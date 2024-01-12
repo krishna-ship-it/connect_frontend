@@ -19,7 +19,41 @@ const slice = createSlice({
 export const { setUserState } = slice.actions;
 
 export default slice.reducer;
-export const loginThunk = (data) => {
+
+export const signupThunk = (data, navigateTo) => {
+  return async function (dispatch) {
+    dispatch(setUserState({ ...INITIALSTATE, status: stateStatus.LOADING }));
+    try {
+      const response = await fetch(apiEndpoints.userAuthEndpoints.SIGNUP, {
+        method: "POST",
+        body: data,
+      });
+      const result = await response.json();
+      console.log(result);
+      if (!response.ok) throw result;
+      localStorage.setItem("token", result.data.token);
+      console.log(result);
+      dispatch(
+        setUserState({
+          status: stateStatus.IDLE,
+          user: result.data.user,
+          isAuthenticated: true,
+        })
+      );
+      navigateTo(`/profile/${result.data.user.id}`);
+    } catch (err) {
+      dispatch(
+        setUserState({
+          ...INITIALSTATE,
+          status: stateStatus.ERROR,
+          error: err.message,
+        })
+      );
+    }
+  };
+};
+
+export const loginThunk = (data, navigateTo) => {
   return async function (dispatch) {
     dispatch(setUserState({ ...INITIALSTATE, status: stateStatus.LOADING }));
     try {

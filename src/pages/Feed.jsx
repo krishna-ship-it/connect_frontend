@@ -3,11 +3,15 @@ import { useSelector } from "react-redux";
 import Modal from "../common/Modal";
 import { apiEndpoints } from "./../config/api-config";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 function Feed() {
   const { isAuthenticated, user } = useSelector((state) => state.user);
   const [isOpen, setIsOpen] = useState(false);
   const [text, setText] = useState("");
   const [images, setImages] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  let toastId = null;
   const submitHandler = async () => {
     const formData = new FormData();
     if (text) formData.append("title", text);
@@ -18,6 +22,8 @@ function Feed() {
         formData.append("attachments", file);
       });
     }
+    setLoading(true);
+    toastId = toast.loading("posting");
     try {
       const response = await fetch(
         `${apiEndpoints.postsEndpoints.CREATEPOST}`,
@@ -28,9 +34,17 @@ function Feed() {
         }
       );
       const result = await response.json();
-      console.log(result);
+      if (toastId) {
+        toast.dismiss(toastId);
+        toastId = null;
+      }
       toast.success("posted");
+      navigate(`/profile/${user.id}`);
     } catch (err) {
+      if (toastId) {
+        toast.dismiss(toastId);
+        toastId = null;
+      }
       toast.error(err.message);
     }
   };
@@ -58,7 +72,7 @@ function Feed() {
               setIsOpen(false);
             }}
           >
-            <div className="w-full h-full">
+            <div className="w-[320px] h-full">
               <textarea
                 className="resize-none bg-transparent w-full  outline-none p-3
                 border-purple-300 border-[1px]
@@ -99,7 +113,9 @@ function Feed() {
                   onClick={(e) => {
                     e.preventDefault();
                     submitHandler();
+                    setIsOpen(false);
                   }}
+                  className="cursor-pointer w-full h-full rounded-md p-1 bg-purple-500"
                 >
                   Post
                 </button>

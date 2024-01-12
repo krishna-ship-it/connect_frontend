@@ -12,7 +12,11 @@ function Login() {
   const submitHandler = () => {
     if (!isEmail(userData.email)) return toast.error("incorrect email format");
     if (!userData.password) return toast.error("password is required");
-    dispatch(loginThunk(userData));
+    dispatch(
+      loginThunk(userData, (page) => {
+        navigate(`${page}`);
+      })
+    );
   };
 
   return (

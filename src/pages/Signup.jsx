@@ -1,34 +1,47 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { loginThunk } from "../store/slices/user-slice";
+import { loginThunk, signupThunk } from "../store/slices/user-slice";
 import { isEmail } from "../helper/input-validation";
 import toast from "react-hot-toast";
 import Modal from "../common/Modal";
 import Crop from "../common/Crop";
+import { useNavigate } from "react-router-dom";
 
 function Signup() {
-  console.log("signup");
   const dispatch = useDispatch();
   const [userData, setUserData] = useState({
     name: "",
     email: "",
     password: "",
   });
+  const navigate = useNavigate();
   const [userImage, setUserImage] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [croppedImage, setCroppedImage] = useState(null);
   const submitHandler = () => {
+    if (!userData.name) return toast.error("name is required");
     if (!isEmail(userData.email)) return toast.error("incorrect email format");
     if (!userData.password) return toast.error("password is required");
-    dispatch(loginThunk(userData));
+    if (!croppedImage) return toast.error("profile picture is required");
+    const formData = new FormData();
+    formData.append("name", userData.name);
+    formData.append("email", userData.email);
+    formData.append("password", userData.password);
+    formData.append("avatar", croppedImage);
+
+    dispatch(
+      signupThunk(formData, (page) => {
+        navigate(`${page}`);
+      })
+    );
   };
-  const [croppedImage, setCroppedImage] = useState(null);
+
   useEffect(() => {
     if (userImage) setIsOpen(true);
   }, [userImage]);
-  console.log(userImage);
   return (
-    <div className="login_wrapper w-screen p-5 flex justify-center items-center">
-      <div className="login_inner flex flex-col w-11/12">
+    <div className="signup_wrapper w-screen p-5 flex justify-center items-center">
+      <div className="signup_inner flex flex-col w-11/12">
         <form
           className="flex flex-col items-center w-full"
           onSubmit={(e) => {
@@ -36,20 +49,35 @@ function Signup() {
             submitHandler();
           }}
         >
-          <div className="h-[250px] w-[250px] bg-gray-300 self-start rounded-[50%] relative">
+          <div className="h-[150px] w-[150px] bg-gray-300 self-start rounded-[50%] relative">
             <input
               className="hidden"
               name="user_image"
               id="user_image"
               type="file"
               onChange={(e) => {
-                setUserImage(URL.createObjectURL(e.target.files[0]));
+                setUserImage(e.target.files);
               }}
             />
-
+            {croppedImage && (
+              <img
+                src={URL.createObjectURL(croppedImage)}
+                className="w-full rounded-[50%]"
+              />
+            )}
             <label htmlFor="user_image">
               <i className="fa-solid fa-image bg-purple-950 p-3 rounded-[50%] absolute top-[80%] right-[1%] cursor-pointer"></i>
             </label>
+            {/* recrop icon */}
+            {croppedImage && (
+              <i
+                className="fa-solid fa-pen bg-purple-950 p-3 rounded-[50%] absolute top-[58%] right-[-15%] cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsOpen(true);
+                }}
+              ></i>
+            )}
           </div>
           <div className="name_wrapper flex flex-col mb-2 w-full">
             <label>Name</label>
@@ -85,7 +113,7 @@ function Signup() {
               className="bg-purple-400  w-full rounded-md p-2"
               type="submit"
             >
-              LOGIN
+              SIGNUP
             </button>
           </div>
           <Modal
@@ -102,6 +130,17 @@ function Signup() {
                 };
               }}
             />
+            <div className="pt-2 w-full h-full">
+              <button
+                className="cursor-pointer w-full h-full rounded-md p-1 bg-purple-500"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsOpen(false);
+                }}
+              >
+                OK
+              </button>
+            </div>
           </Modal>
         </form>
       </div>
