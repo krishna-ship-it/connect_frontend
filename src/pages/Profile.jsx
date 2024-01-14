@@ -1,18 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { apiEndpoints } from "./../config/api-config";
 import PostCard from "../common/PostCard";
 import PostCardSkeleton from "../common/PostCardSkeleton";
+import Modal from "../common/Modal";
 function Profile() {
   const [posts, setPosts] = useState([]);
   const [author, setAuthor] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [friendsCount, setFriendsCount] = useState(0);
+  const [profilePictureLoaded, setProfilePictureLoaded] = useState(false);
+  const [deletedPosts, setDeletedPost] = useState([]);
+  const { isAuthenticated, user } = useSelector((state) => state.user);
   const params = useParams();
   const { user_id } = params;
   const navigate = useNavigate();
   const skeletons = Array(25).fill(0);
-  const [profilePictureLoaded, setProfilePictureLoaded] = useState(false);
   useEffect(() => {
     if (!isAuthenticated) return navigate("/login");
     const fetchPosts = async () => {
@@ -38,12 +42,30 @@ function Profile() {
     };
     fetchPosts();
   }, [user_id]);
-  const [deletedPosts, setDeletedPost] = useState([]);
-  const { isAuthenticated, user } = useSelector((state) => state.user);
+
+  useEffect(() => {
+    if (!isAuthenticated) return navigate("/login");
+    const fetchFriends = async () => {
+      try {
+        const response = await fetch(
+          `${apiEndpoints.friendsEndpoints.GETFRIENDS}/${user.id}`,
+          {
+            method: "get",
+            headers: {
+              "x-auth-token": localStorage.getItem("token"),
+            },
+          }
+        );
+        const data = await response.json();
+        setFriendsCount(data.totalFriends);
+      } catch (err) {}
+    };
+    fetchFriends();
+  }, []);
+
   const deletePostHandler = (id) => {
     setDeletedPost((pre) => [...pre, id]);
   };
-  console.log(deletedPosts);
   return (
     <div className="profile_wrapper w-screen p-8">
       <div className="profile_intro flex flex-col justify-center items-center">
@@ -69,6 +91,7 @@ function Profile() {
           />
         </div>
         <h1 className="text-2xl text-purple-400 text-justify">{user?.name}</h1>
+        <Link to={`/friends/${user.id}`}>{friendsCount} Friends</Link>
         {loading ? (
           skeletons.map((s, i) => <PostCardSkeleton key={i} />)
         ) : posts ? (

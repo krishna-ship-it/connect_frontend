@@ -12,4 +12,8 @@ export const apiEndpoints = {
     LIKEORREMOVELIKEPOST: "http://localhost:4000/api/v1/likes/posts",
     DELETEPOST: "http://localhost:4000/api/v1/posts",
   },
+  friendsEndpoints: {
+    // http://localhost:4000/api/v1/friends/${userID}
+    GETFRIENDS: "http://localhost:4000/api/v1/friends",
+  },
 };
