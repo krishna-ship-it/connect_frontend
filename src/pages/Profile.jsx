@@ -3,15 +3,20 @@ import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiEndpoints } from "./../config/api-config";
 import PostCard from "../common/PostCard";
+import PostCardSkeleton from "../common/PostCardSkeleton";
 function Profile() {
   const [posts, setPosts] = useState([]);
   const [author, setAuthor] = useState(null);
+  const [loading, setLoading] = useState(false);
   const params = useParams();
   const { user_id } = params;
   const navigate = useNavigate();
+  const skeletons = Array(25).fill(0);
+  const [profilePictureLoaded, setProfilePictureLoaded] = useState(false);
   useEffect(() => {
     if (!isAuthenticated) return navigate("/login");
     const fetchPosts = async () => {
+      setLoading(true);
       try {
         const response = await fetch(
           `${apiEndpoints.postsEndpoints.GETPOSTS}/${user_id}/?page_no=1`,
@@ -26,30 +31,63 @@ function Profile() {
         console.log(data);
         setPosts(data.posts);
         setAuthor(data.author_details);
-        // console.log(author);
-        console.log(posts);
       } catch (err) {
         console.log(err);
       }
+      setLoading(false);
     };
     fetchPosts();
   }, [user_id]);
+  const [deletedPosts, setDeletedPost] = useState([]);
   const { isAuthenticated, user } = useSelector((state) => state.user);
-
+  const deletePostHandler = (id) => {
+    setDeletedPost((pre) => [...pre, id]);
+  };
+  console.log(deletedPosts);
   return (
     <div className="profile_wrapper w-screen p-8">
-      <div className="profile_intro flex flex-col justify-center items-center ">
-        <img
-          src={user?.avatar_public_url}
-          className="rounded-[50%] w-[100px]"
-        />
+      <div className="profile_intro flex flex-col justify-center items-center">
+        <div
+          className={
+            profilePictureLoaded
+              ? "bg-purple-300 w-[100px] rounded-[50%]"
+              : "bg-purple-300 w-[100px] rounded-[50%] animate-pulse"
+          }
+        >
+          <img
+            src={user?.avatar_public_url}
+            className={
+              profilePictureLoaded
+                ? "rounded-[50%] w-[100px] opacity-1"
+                : "rounded-[50%] w-[100px] opacity-0"
+            }
+            onLoad={(e) => {
+              setTimeout(() => {
+                setProfilePictureLoaded(true);
+              }, 1000);
+            }}
+          />
+        </div>
         <h1 className="text-2xl text-purple-400 text-justify">{user?.name}</h1>
-        {posts ? (
+        {loading ? (
+          skeletons.map((s, i) => <PostCardSkeleton key={i} />)
+        ) : posts ? (
           <div className="posts">
             {posts?.length > 0 ? (
-              posts?.map((post) => (
-                <PostCard post={post} author={author} key={post.id} />
-              ))
+              posts?.map((post) => {
+                if (!deletedPosts?.includes(post.id)) {
+                  return (
+                    <PostCard
+                      post={post}
+                      author={author}
+                      key={post.id}
+                      onDelete={() => {
+                        deletePostHandler(post.id);
+                      }}
+                    />
+                  );
+                }
+              })
             ) : (
               <p>You have not posted anything</p>
             )}

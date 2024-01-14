@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { apiEndpoints } from "../config/api-config";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
-function PostCard({ post, author }) {
+export default React.memo(function PostCard({ post, author, onDelete }) {
   const [likes, setLikes] = useState(post.Likes || []);
   const [liked, setLiked] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
@@ -12,7 +12,7 @@ function PostCard({ post, author }) {
   useEffect(() => {
     for (const like of likes) if (like.user_id == user.id) setLiked(true);
   }, []);
-
+  const [imgaeLoaded, setImageLoaded] = useState(false);
   // handler for fetching the likes
   const getLikes = async () => {
     try {
@@ -77,6 +77,7 @@ function PostCard({ post, author }) {
         const data = await response.json();
         throw new Error(data.message || "something went wrong");
       }
+      onDelete();
       toast.success("post deleted");
     } catch (err) {}
   };
@@ -86,7 +87,7 @@ function PostCard({ post, author }) {
     : "p-2 rounded-[25px] hover:bg-purple-500";
 
   return (
-    <div className="w-full border-purple-200 border-[1px] mx-2 my-4 py-2 rounded-md">
+    <div className="w-full border-purple-200 border-[1px]  my-4 py-2 rounded-md">
       <div className="author flex items-center py-2 px-2 justify-between">
         <div className="author_details flex items-center">
           <img
@@ -127,12 +128,20 @@ function PostCard({ post, author }) {
         <div className={`files`}>
           {post.files.map((file, i) => {
             return (
-              <img
-                src={file.url}
-                className="w-full mb-2"
-                key={i}
-                loading="lazy"
-              />
+              <div className={"w-full h-full bg-gray-400"} key={i}>
+                <img
+                  src={file.url}
+                  className={
+                    imgaeLoaded
+                      ? "w-full h-full opacity-100"
+                      : "w-full h-full opacity-0"
+                  }
+                  loading="lazy"
+                  onLoad={(e) => {
+                    setImageLoaded(true);
+                  }}
+                />
+              </div>
             );
           })}
         </div>
@@ -166,6 +175,4 @@ function PostCard({ post, author }) {
       </div>
     </div>
   );
-}
-
-export default PostCard;
+});
