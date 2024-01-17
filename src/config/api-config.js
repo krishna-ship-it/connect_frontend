@@ -3,6 +3,9 @@ export const apiEndpoints = {
     LOGIN: "http://localhost:3000/api/v1/users/login",
     SIGNUP: "http://localhost:3000/api/v1/users/signup",
     GETMYPROFILE: "http://localhost:3000/api/v1/users/profile/me",
+    // http://localhost:3000/api/v1/users/${userid}
+    GETUSERBYID: "http://localhost:3000/api/v1/users",
+    GETALLUSER: "http://localhost:3000/api/v1/users/",
   },
   postsEndpoints: {
     CREATEPOST: "http://localhost:4000/api/v1/posts",

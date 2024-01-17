@@ -10,6 +10,7 @@ import Profile from "./pages/Profile.jsx";
 import Feed from "./pages/Feed.jsx";
 import Signup from "./pages/Signup.jsx";
 import Friends from "./pages/Friends.jsx";
+import FriendSearchPage from "./pages/FriendSearchPage.jsx";
 const appRouter = createBrowserRouter([
   {
     path: "/",
@@ -20,6 +21,7 @@ const appRouter = createBrowserRouter([
       { path: "profile/:user_id", element: <Profile /> },
       { path: "feed", element: <Feed /> },
       { path: "friends/:user_id", element: <Friends /> },
+      { path: "people", element: <FriendSearchPage /> },
     ],
   },
 ]);
