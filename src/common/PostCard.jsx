@@ -96,32 +96,34 @@ export default React.memo(function PostCard({ post, author, onDelete }) {
           />
           <Link to={`/profile/${author.id}`}>{author.name}</Link>
         </div>
-        <div className="options relative">
-          <i
-            className="fa-solid fa-ellipsis-vertical cursor-pointer"
-            onClick={(e) => {
-              e.preventDefault();
-              setShowOptions(!showOptions);
-            }}
-          ></i>
-          {showOptions && (
-            <div className="absolute right-0 top-full bg-slate-400 p-3 z-10 rounded-md">
-              {post.author_id === user.id && (
-                <>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      deletePostHandler();
-                    }}
-                  >
-                    Delete
-                  </button>
-                  <button>Edit</button>
-                </>
-              )}
-            </div>
-          )}
-        </div>
+        {author.id === user.id && (
+          <div className="options relative">
+            <i
+              className="fa-solid fa-ellipsis-vertical cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                setShowOptions(!showOptions);
+              }}
+            ></i>
+            {showOptions && (
+              <div className="absolute right-0 top-full bg-slate-400 p-3 z-10 rounded-md">
+                {post.author_id === user.id && (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        deletePostHandler();
+                      }}
+                    >
+                      Delete
+                    </button>
+                    <button>Edit</button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
       <p className="px-2 text-left">{post?.title}</p>
       {post?.files && (

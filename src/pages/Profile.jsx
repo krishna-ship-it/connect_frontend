@@ -1,26 +1,78 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { apiEndpoints } from "./../config/api-config";
-import PostCard from "../common/PostCard";
-import PostCardSkeleton from "../common/PostCardSkeleton";
-import Modal from "../common/Modal";
+import { useParams, Link } from "react-router-dom";
+import { apiEndpoints } from "../config/api-config";
+import PostCardSkeleton from "./../common/PostCardSkeleton";
+import PostCard from "./../common/PostCard";
+const ProfileHeaderSkeleton = () => {
+  const skeletons = Array(15).fill(1);
+  return (
+    <div className="profile_skeleton_wrapper p-3">
+      <div className="flex flex-col justify-center items-center">
+        <div
+          className={
+            "bg-purple-300 w-[100px] h-[100px] rounded-[50%] animate-pulse"
+          }
+        ></div>
+        <div className="h-[20px] w-[180px] bg-purple-300 animate-pulse rounded-md mt-2"></div>
+        <div className="h-[20px] w-[180px] bg-purple-300 animate-pulse rounded-md mt-2"></div>
+      </div>
+      <div className="flex items-center flex-col">
+        {skeletons.map((s, i) => (
+          <PostCardSkeleton key={i} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 function Profile() {
-  const [posts, setPosts] = useState([]);
-  const [author, setAuthor] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [friendsCount, setFriendsCount] = useState(0);
+  const [profile, setProfile] = useState(null);
+  const { user_id } = useParams();
   const [profilePictureLoaded, setProfilePictureLoaded] = useState(false);
   const [deletedPosts, setDeletedPost] = useState([]);
-  const { isAuthenticated, user } = useSelector((state) => state.user);
-  const params = useParams();
-  const { user_id } = params;
-  const navigate = useNavigate();
-  const skeletons = Array(25).fill(0);
+  const [loading, setLoading] = useState(false);
+  const deletePostHandler = (id) => {
+    setDeletedPost((pre) => [...pre, id]);
+  };
   useEffect(() => {
-    if (!isAuthenticated) return navigate("/login");
+    const fetchUser = async () => {
+      try {
+        const response = await fetch(
+          `${apiEndpoints.userAuthEndpoints.GETUSERBYID}/${user_id}`,
+          {
+            method: "GET",
+            headers: {
+              "x-auth-token": localStorage.getItem("token"),
+            },
+          }
+        );
+        const data = await response.json();
+        setProfile((pre) => {
+          return { ...pre, user: data.user };
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    const fetchFriends = async () => {
+      try {
+        const response = await fetch(
+          `${apiEndpoints.friendsEndpoints.GETFRIENDS}/${user_id}`,
+          {
+            method: "get",
+            headers: {
+              "x-auth-token": localStorage.getItem("token"),
+            },
+          }
+        );
+        const data = await response.json();
+
+        setProfile((pre) => {
+          return { ...pre, friends: data };
+        });
+      } catch (err) {}
+    };
     const fetchPosts = async () => {
-      setLoading(true);
       try {
         const response = await fetch(
           `${apiEndpoints.postsEndpoints.GETPOSTS}/${user_id}/?page_no=1`,
@@ -32,77 +84,69 @@ function Profile() {
           }
         );
         const data = await response.json();
-        console.log(data);
-        setPosts(data.posts);
-        setAuthor(data.author_details);
+        setProfile((pre) => {
+          return { ...pre, posts: data };
+        });
       } catch (err) {
         console.log(err);
       }
-      setLoading(false);
     };
-    fetchPosts();
-  }, [user_id]);
-
-  useEffect(() => {
-    if (!isAuthenticated) return navigate("/login");
-    const fetchFriends = async () => {
+    const init = async () => {
       try {
-        const response = await fetch(
-          `${apiEndpoints.friendsEndpoints.GETFRIENDS}/${user.id}`,
-          {
-            method: "get",
-            headers: {
-              "x-auth-token": localStorage.getItem("token"),
-            },
-          }
-        );
-        const data = await response.json();
-        setFriendsCount(data.totalFriends);
+        setLoading(true);
+        await fetchUser();
+        await fetchFriends();
+        await fetchPosts();
+        setLoading(false);
+        console.log("comple");
       } catch (err) {}
     };
-    fetchFriends();
-  }, []);
-
-  const deletePostHandler = (id) => {
-    setDeletedPost((pre) => [...pre, id]);
-  };
-  return (
-    <div className="profile_wrapper w-screen p-8">
-      <div className="profile_intro flex flex-col justify-center items-center">
-        <div
-          className={
-            profilePictureLoaded
-              ? "bg-purple-300 w-[100px] rounded-[50%]"
-              : "bg-purple-300 w-[100px] rounded-[50%] animate-pulse"
-          }
-        >
-          <img
-            src={user?.avatar_public_url}
+    init();
+  }, [user_id]);
+  return loading ? (
+    <ProfileHeaderSkeleton />
+  ) : (
+    <>
+      <div className="profile_wrapper w-screen p-8 flex flex-col items-center justify-center">
+        {/* profile header */}
+        <div className="profile_intro flex flex-col justify-center items-center">
+          <div
             className={
               profilePictureLoaded
-                ? "rounded-[50%] w-[100px] opacity-1"
-                : "rounded-[50%] w-[100px] opacity-0"
+                ? "bg-purple-300 w-[100px] rounded-[50%]"
+                : "bg-purple-300 w-[100px] rounded-[50%] animate-pulse"
             }
-            onLoad={(e) => {
-              setTimeout(() => {
-                setProfilePictureLoaded(true);
-              }, 1000);
-            }}
-          />
+          >
+            <img
+              src={profile?.user?.avatar_public_url}
+              className={
+                profilePictureLoaded
+                  ? "rounded-[50%] w-[100px] opacity-1"
+                  : "rounded-[50%] w-[100px] opacity-0"
+              }
+              onLoad={(e) => {
+                setTimeout(() => {
+                  setProfilePictureLoaded(true);
+                }, 1000);
+              }}
+            />
+          </div>
+          <h1 className="text-2xl text-purple-400 text-justify">
+            {profile?.user?.name}
+          </h1>
+          <Link to={`/friends/${profile?.user?.id}`}>
+            {profile?.friends?.totalFriends} Friends
+          </Link>
         </div>
-        <h1 className="text-2xl text-purple-400 text-justify">{user?.name}</h1>
-        <Link to={`/friends/${user.id}`}>{friendsCount} Friends</Link>
-        {loading ? (
-          skeletons.map((s, i) => <PostCardSkeleton key={i} />)
-        ) : posts ? (
+        {profile?.posts?.posts && (
           <div className="posts">
-            {posts?.length > 0 ? (
-              posts?.map((post) => {
+            {profile?.posts?.posts.length > 0 ? (
+              profile?.posts?.posts.map((post) => {
                 if (!deletedPosts?.includes(post.id)) {
                   return (
                     <PostCard
                       post={post}
-                      author={author}
+                      author={profile.posts.author_details}
                       key={post.id}
                       onDelete={() => {
                         deletePostHandler(post.id);
@@ -112,14 +156,12 @@ function Profile() {
                 }
               })
             ) : (
-              <p>You have not posted anything</p>
+              <p className="text-red-400 text-2xl">No posts.</p>
             )}
           </div>
-        ) : (
-          "<h1>You have not posted anything</h1>"
         )}
       </div>
-    </div>
+    </>
   );
 }
 
