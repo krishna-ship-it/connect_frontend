@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { apiEndpoints } from "../config/api-config";
 import PostCardSkeleton from "./../common/PostCardSkeleton";
 import PostCard from "./../common/PostCard";
+import { useSelector } from "react-redux";
 const ProfileHeaderSkeleton = () => {
   const skeletons = Array(15).fill(1);
   return (
@@ -27,12 +28,54 @@ const ProfileHeaderSkeleton = () => {
 
 function Profile() {
   const [profile, setProfile] = useState(null);
+  const [alreadyFriends, setAlreadyFriends] = useState(false);
+  const [alreadySentRequest, setAlreadySentRequest] = useState(null);
   const { user_id } = useParams();
   const [profilePictureLoaded, setProfilePictureLoaded] = useState(false);
   const [deletedPosts, setDeletedPost] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { isAuthenticated, user } = useSelector((state) => state.user);
   const deletePostHandler = (id) => {
     setDeletedPost((pre) => [...pre, id]);
+  };
+  const sendRequest = async (to) => {
+    try {
+      const response = await fetch(
+        `${apiEndpoints.friendsEndpoints.SENDREQUEST}/${to}`,
+        {
+          method: "post",
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("token"),
+          },
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      setAlreadySentRequest(data.requestId);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  const withdrawRequest = async () => {
+    try {
+      console.log("withdrawing request ", alreadySentRequest);
+      const response = await fetch(
+        `${apiEndpoints.friendsEndpoints.WITHDRAWREQUEST}/${alreadySentRequest}`,
+        {
+          method: "delete",
+          headers: {
+            "x-auth-token": localStorage.getItem("token"),
+          },
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      console.log("request withdrawed");
+      setAlreadySentRequest(false);
+    } catch (err) {
+      console.log(err);
+    }
   };
   useEffect(() => {
     const fetchUser = async () => {
@@ -91,18 +134,62 @@ function Profile() {
         console.log(err);
       }
     };
+    const getFriendShipStatus = async () => {
+      try {
+        const response = await fetch(
+          `${apiEndpoints.friendsEndpoints.GETFRIENDSHIPSTATUS}/${user?.id}/${user_id}`,
+          {
+            method: "get",
+            headers: {
+              "x-auth-token": localStorage.getItem("token"),
+            },
+          }
+        );
+        const data = await response.json();
+        setAlreadyFriends(data.friends);
+        console.log(data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    const getRequestStatus = async () => {
+      try {
+        const response = await fetch(
+          `${apiEndpoints.friendsEndpoints.GETREQUESTSTATUS}/${user_id}`,
+          {
+            method: "get",
+            headers: {
+              "x-auth-token": localStorage.getItem("token"),
+            },
+          }
+        );
+
+        const data = await response.json();
+        if (response.ok) {
+          setAlreadySentRequest(data.requestId);
+        }
+        console.log(data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
     const init = async () => {
       try {
         setLoading(true);
         await fetchUser();
         await fetchFriends();
         await fetchPosts();
+        await getFriendShipStatus();
+        await getRequestStatus();
         setLoading(false);
         console.log("comple");
       } catch (err) {}
     };
+    if (!isAuthenticated) return;
     init();
-  }, [user_id]);
+  }, [user_id, user]);
+
   return loading ? (
     <ProfileHeaderSkeleton />
   ) : (
@@ -137,6 +224,28 @@ function Profile() {
           <Link to={`/friends/${profile?.user?.id}`}>
             {profile?.friends?.totalFriends} Friends
           </Link>
+          {user?.id != user_id && !alreadyFriends && !alreadySentRequest && (
+            <button
+              className="bg-purple-500 px-2 py-1 rounded-md"
+              onClick={(e) => {
+                e.preventDefault();
+                sendRequest(user_id);
+              }}
+            >
+              Add Friend
+            </button>
+          )}
+          {alreadySentRequest && (
+            <button
+              className="bg-purple-500 px-2 py-1 rounded-md"
+              onClick={(e) => {
+                e.preventDefault();
+                if (alreadySentRequest) withdrawRequest();
+              }}
+            >
+              Withdraw Request
+            </button>
+          )}
         </div>
         {profile?.posts?.posts && (
           <div className="posts">

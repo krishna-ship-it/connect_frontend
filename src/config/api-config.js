@@ -18,5 +18,15 @@ export const apiEndpoints = {
   friendsEndpoints: {
     // http://localhost:4000/api/v1/friends/${userID}
     GETFRIENDS: "http://localhost:4000/api/v1/friends",
+    // http://localhost:4000/api/v1/friends/check/user1_id/user2_id
+    GETFRIENDSHIPSTATUS: "http://localhost:4000/api/v1/friends/check",
+    // http://localhost:4000/api/v1/requests/userid
+    SENDREQUEST: "http://localhost:4000/api/v1/requests",
+    // http://localhost:4000/api/v1/requests/check-request-status/id_of_user_whom_you_sent_the_request
+
+    GETREQUESTSTATUS:
+      "http://localhost:4000/api/v1/requests/check-request-status",
+    // http://localhost:4000/api/v1/requests/withdraw-request/{requestId}
+    WITHDRAWREQUEST: "http://localhost:4000/api/v1/requests/withdraw-request",
   },
 };
